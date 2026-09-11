@@ -1,3 +1,4 @@
+import io
 import cv2
 import numpy as np
 import streamlit as st
@@ -75,7 +76,7 @@ if uploaded_file is not None:
             except Exception:
                 pass
 
-        # Wyświetlanie wyniku
+        # Wyświetlanie wyniku i opcji pobierania
         if mask_binary is not None and np.any(mask_binary > 0):
             img_cv = cv2.cvtColor(np.array(raw_image), cv2.COLOR_RGB2BGR)
             result_cv = cv2.inpaint(img_cv, mask_binary, 3, cv2.INPAINT_TELEA)
@@ -83,5 +84,18 @@ if uploaded_file is not None:
 
             st.write("### Wynik:")
             st.image(result_rgb, use_container_width=True)
+
+            # Konwersja zdjęcia z wyniku na bajty do pobrania
+            result_pil = Image.fromarray(result_rgb)
+            buf = io.BytesIO()
+            result_pil.save(buf, format="PNG")
+            byte_im = buf.getvalue()
+
+            st.download_button(
+                label="📥 Pobierz wyczarowane zdjęcie",
+                data=byte_im,
+                file_name="magiczne_zdjecie_polusi.png",
+                mime="image/png",
+            )
         else:
             st.warning("Najpierw zamaluj element do usunięcia!")
