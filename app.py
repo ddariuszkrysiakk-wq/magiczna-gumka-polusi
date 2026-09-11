@@ -39,9 +39,13 @@ if uploaded_file is not None:
     )
 
     if st.button("Wyczaruj zmianę ✨", type="primary"):
-        # Bezpieczne pobranie danych z płótna
-        img_data = getattr(canvas_result, "image_data", None)
-        
+        img_data = None
+        if canvas_result is not None:
+            try:
+                img_data = canvas_result.image_data
+            except Exception:
+                img_data = None
+
         if img_data is not None and np.any(img_data[:, :, 3] > 0):
             img_cv = cv2.cvtColor(np.array(raw_image), cv2.COLOR_RGB2BGR)
             mask = img_data[:, :, 3]
