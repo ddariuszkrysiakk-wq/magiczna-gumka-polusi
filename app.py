@@ -42,7 +42,7 @@ if uploaded_file is not None:
     if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = None
 
-        # 1. Najpierw sprawdzamy dane JSON (najpewniejsza metoda na telefonach)
+        # 1. Sprawdzanie danych JSON
         if (
             canvas_result.json_data is not None
             and "objects" in canvas_result.json_data
@@ -65,7 +65,7 @@ if uploaded_file is not None:
                             thickness=stroke_w,
                         )
 
-        # 2. Jeśli JSON był pusty, robimy próbę z image_data
+        # 2. Rezerwa: próba z image_data
         if mask_binary is None or not np.any(mask_binary > 0):
             try:
                 img_data = canvas_result.image_data
@@ -75,13 +75,13 @@ if uploaded_file is not None:
             except Exception:
                 pass
 
-        # Przetwarzanie i wynik
+        # Wyświetlanie wyniku
         if mask_binary is not None and np.any(mask_binary > 0):
             img_cv = cv2.cvtColor(np.array(raw_image), cv2.COLOR_RGB2BGR)
             result_cv = cv2.inpaint(img_cv, mask_binary, 3, cv2.INPAINT_TELEA)
             result_rgb = cv2.cvtColor(result_cv, cv2.COLOR_BGR2RGB)
 
             st.write("### Wynik:")
-            st.image(result_rgb, use_column_width=True)
+            st.image(result_rgb, use_container_width=True)
         else:
             st.warning("Najpierw zamaluj element do usunięcia!")
