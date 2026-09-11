@@ -6,7 +6,6 @@ from streamlit_drawable_canvas import st_canvas
 
 st.set_page_config(page_title="Magiczna Gumka Polusi", page_icon="❤️")
 
-# Nagłówek i podtytuł dla Polusi
 st.title("❤️ DLA CÓRUSI POLUSI ❤️")
 st.subheader("❤️ OD TATY ❤️")
 
@@ -17,7 +16,6 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     raw_image = Image.open(uploaded_file).convert("RGB")
 
-    # Skalowanie zdjęcia, aby nie przeciążyć pamięci na telefonie
     max_size = 1024
     w, h = raw_image.size
     if max(w, h) > max_size:
@@ -41,12 +39,12 @@ if uploaded_file is not None:
     )
 
     if st.button("Wyczaruj zmianę ✨", type="primary"):
-        if (
-            canvas_result.image_data is not None
-            and np.any(canvas_result.image_data[:, :, 3] > 0)
-        ):
+        # Bezpieczne pobranie danych z płótna
+        img_data = getattr(canvas_result, "image_data", None)
+        
+        if img_data is not None and np.any(img_data[:, :, 3] > 0):
             img_cv = cv2.cvtColor(np.array(raw_image), cv2.COLOR_RGB2BGR)
-            mask = canvas_result.image_data[:, :, 3]
+            mask = img_data[:, :, 3]
             _, mask_binary = cv2.threshold(mask, 10, 255, cv2.THRESH_BINARY)
 
             result_cv = cv2.inpaint(img_cv, mask_binary, 3, cv2.INPAINT_TELEA)
