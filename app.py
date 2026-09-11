@@ -26,9 +26,10 @@ if uploaded_file is not None:
 
     st.write("Zamaluj pędzlem element, który ma zniknąć:")
 
+    stroke_w = 20
     canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
-        stroke_width=20,
+        stroke_width=stroke_w,
         stroke_color="#ff0000",
         background_image=raw_image,
         update_streamlit=True,
@@ -39,18 +40,44 @@ if uploaded_file is not None:
     )
 
     if st.button("Wyczaruj zmianę ✨", type="primary"):
-        img_data = None
-        if canvas_result is not None:
+        mask_binary = None
+
+        # 1. Najpierw sprawdzamy dane JSON (najpewniejsza metoda na telefonach)
+        if (
+            canvas_result.json_data is not None
+            and "objects" in canvas_result.json_data
+            and len(canvas_result.json_data["objects"]) > 0
+        ):
+            mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
+            for obj in canvas_result.json_data["objects"]:
+                if "path" in obj:
+                    pts = []
+                    for p in obj["path"]:
+                        if p[0] in ["M", "L", "Q"] and len(p) >= 3:
+                            pts.append([int(p[1]), int(p[2])])
+                    if len(pts) > 1:
+                        pts_arr = np.array(pts, dtype=np.int32).reshape((-1, 1, 2))
+                        cv2.polylines(
+                            mask_binary,
+                            [pts_arr],
+                            isClosed=False,
+                            color=255,
+                            thickness=stroke_w,
+                        )
+
+        # 2. Jeśli JSON był pusty, robimy próbę z image_data
+        if mask_binary is None or not np.any(mask_binary > 0):
             try:
                 img_data = canvas_result.image_data
+                if img_data is not None and np.any(img_data[:, :, 3] > 0):
+                    mask = img_data[:, :, 3]
+                    _, mask_binary = cv2.threshold(mask, 10, 255, cv2.THRESH_BINARY)
             except Exception:
-                img_data = None
+                pass
 
-        if img_data is not None and np.any(img_data[:, :, 3] > 0):
+        # Przetwarzanie i wynik
+        if mask_binary is not None and np.any(mask_binary > 0):
             img_cv = cv2.cvtColor(np.array(raw_image), cv2.COLOR_RGB2BGR)
-            mask = img_data[:, :, 3]
-            _, mask_binary = cv2.threshold(mask, 10, 255, cv2.THRESH_BINARY)
-
             result_cv = cv2.inpaint(img_cv, mask_binary, 3, cv2.INPAINT_TELEA)
             result_rgb = cv2.cvtColor(result_cv, cv2.COLOR_BGR2RGB)
 
