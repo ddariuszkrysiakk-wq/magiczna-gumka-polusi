@@ -33,8 +33,8 @@ if uploaded_file is not None:
 
     # 2. Rysowanie płótna canvas
    
-`st.markdown('
-     ', unsafe_allow_html=True)`
+st.markdown("
+    ', unsafe_allow_html=True)`
                 
     canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
