@@ -33,7 +33,7 @@ st.write("Zamaluj pędzlem element, który ma zniknąć(przesuwaj ramkę palcem,
 
     # 2. Rysowanie płótna canvas
    
-st.markdown("<div style='width: 100%; overflow: auto; border: 1px solid #ccc; max-height: 70vh;'>" ,unsafe_allow_html=True)
+st.markdown("<div style='width: 100%; max-height: 60vh; overflow: scroll !important; border: 2px solid #ff4b4b; border-radius: 8px; -webkit-overflow-scrolling: touch;'>" ,unsafe_allow_html=True)
 
 drawing_mode = st.radio(
     "Wybierz tryb:",
