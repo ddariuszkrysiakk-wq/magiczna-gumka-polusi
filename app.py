@@ -18,18 +18,18 @@ if uploaded_file is not None:
     raw_image = Image.open(uploaded_file).convert("RGB")
 
     # 1. Suwaki do kontroli widoku i pędzla
-    col1, col2 = st.columns(2)
-    with col1:
+col1, col2 = st.columns(2)
+with col1:
         # Domyślnie zmniejszamy widok (0.5), aby zdjęcie zmieściło się na telefonie
         zoom_factor = st.slider("🔍 Powiększenie / Rozmiar zdjęcia", min_value=0.2, max_value=1.5, value=0.5, step=0.05)
-    with col2:
+with col2:
         stroke_w = st.slider("🖌️ Grubość pędzla", min_value=5, max_value=100, value=20, step=5)
 
     # Obliczamy wymiary wyświetlania na płótnie
-    canvas_w = int(raw_image.width * zoom_factor)
-    canvas_h = int(raw_image.height * zoom_factor)
+canvas_w = int(raw_image.width * zoom_factor)
+canvas_h = int(raw_image.height * zoom_factor)
 
-    st.write("Zamaluj pędzlem element, który ma zniknąć:")
+st.write("Zamaluj pędzlem element, który ma zniknąć:")
 
     # 2. Rysowanie płótna canvas
    
