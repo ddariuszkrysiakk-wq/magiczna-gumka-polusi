@@ -35,12 +35,7 @@ st.write("Zamaluj pędzlem element, który ma zniknąć(przesuwaj ramkę palcem,
    
 st.markdown("<div style='width: 100%; max-height: 60vh; overflow: scroll !important; border: 2px solid #ff4b4b; border-radius: 8px; -webkit-overflow-scrolling: touch;'>" ,unsafe_allow_html=True)
 
-drawing_mode = st.radio(
-    "Wybierz tryb:",
-    ("freedraw", "transform"),
-    format_func=lambda x: "✏️ Malowanie" if x == "freedraw" else "🔍 Przesuwanie/Powiększanie",
-    horizontal=True
-    )
+
 canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
         stroke_width=stroke_w, 
