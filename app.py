@@ -5,29 +5,7 @@ import streamlit as st
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 
-css_global = "<" + "style>" \
-"[data-testid='stCustomComponentV1'] { " \
-"  overflow: scroll !important; " \
-"  max-height: 65vh !important; " \
-"  border: 2px solid #ff4b4b !important; " \
-"  touch-action: pan-x pan-y !important; " \
-"  overscroll-behavior: contain !important; " \
-"} " \
-"[data-testid='stCustomComponentV1']::-webkit-scrollbar { " \
-"  -webkit-appearance: none !important; " \
-"  width: 10px !important; " \
-"  height: 10px !important; " \
-"} " \
-"[data-testid='stCustomComponentV1']::-webkit-scrollbar-thumb { " \
-"  background-color: #ff4b4b !important; " \
-"  border-radius: 5px !important; " \
-"} " \
-"</style>"
-
-st.markdown(css_global, unsafe_allow_html=True)
-
-st.markdown(css_global, unsafe_allow_html=True)
-
+# 1. Konfiguracja strony MUSI być pierwszą komendą Streamlit
 st.set_page_config(page_title="Magiczna Gumka Polusi", page_icon="❤️")
 
 st.title("❤️ DLA CÓRUSI POLUSI ❤️")
@@ -40,23 +18,25 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     raw_image = Image.open(uploaded_file).convert("RGB")
 
-    # 1. Suwaki do kontroli widoku i pędzla
-col1, col2 = st.columns(2)
-with col1:
-        # Domyślnie zmniejszamy widok (0.5), aby zdjęcie zmieściło się na telefonie
+    # Suwaki do kontroli widoku i pędzla
+    col1, col2 = st.columns(2)
+    with col1:
         zoom_factor = st.slider("🔍 Powiększenie / Rozmiar zdjęcia", min_value=0.2, max_value=2.0, value=1.2, step=0.05)
-with col2:
+    with col2:
         stroke_w = st.slider("🖌️ Grubość pędzla", min_value=5, max_value=100, value=20, step=5)
 
     # Obliczamy wymiary wyświetlania na płótnie
-canvas_w = int(raw_image.width * zoom_factor)
-canvas_h = int(raw_image.height * zoom_factor)
+    canvas_w = int(raw_image.width * zoom_factor)
+    canvas_h = int(raw_image.height * zoom_factor)
 
-st.write("Zamaluj pędzlem element, który ma zniknąć(przesuwaj ramkę palcem, by się przemieścić):")
+    st.write("Zamaluj pędzlem element, który ma zniknąć (użyj suwaków paska na brzegach ramki, aby przemieszczać widok):")
 
-    # 2. Rysowanie płótna canvas
+    # 2. Wymuszenie kontenera z suwakami scrolla (otwarcie ramki)
+    open_div = "<" + "div style='max-width: 100%; max-height: 60vh; overflow: auto !important; border: 3px solid #ff4b4b; border-radius: 10px; -webkit-overflow-scrolling: touch;'>"
+    st.markdown(open_div, unsafe_allow_html=True)
 
-canvas_result = st_canvas(
+    # 3. Rysowanie płótna canvas wewnątrz kontenera
+    canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
         stroke_width=stroke_w, 
         stroke_color="#ff0000",
@@ -68,8 +48,12 @@ canvas_result = st_canvas(
         key="canvas",
     )
 
+    # Zamknięcie kontenera z suwakami
+    close_div = ""
+    st.markdown(close_div, unsafe_allow_html=True)
 
-if st.button("Wyczaruj zmianę ✨", type="primary"):
+    # 4. Akcja przetwarzania zdjęcia
+    if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
 
         # Sprawdzanie danych JSON i przeliczanie punktów ze skali canvas na pełne zdjęcie
@@ -83,7 +67,6 @@ if st.button("Wyczaruj zmianę ✨", type="primary"):
                     pts = []
                     for p in obj["path"]:
                         if p[0] in ["M", "L", "Q"] and len(p) >= 3:
-                            # Przeliczamy współrzędne do oryginalnego rozmiaru zdjęcia
                             orig_x = int(p[1] / zoom_factor)
                             orig_y = int(p[2] / zoom_factor)
                             pts.append([orig_x, orig_y])
