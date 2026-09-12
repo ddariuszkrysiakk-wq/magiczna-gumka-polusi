@@ -17,10 +17,10 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     raw_image = Image.open(uploaded_file).convert("RGB")
 
-    # 1. Suwaki do kontroli widoku i pędzla (świetne na telefon!)
+    # 1. Suwaki do kontroli widoku i pędzla
     col1, col2 = st.columns(2)
     with col1:
-        # Domyślnie zmniejszamy widok, żeby od razu całe zdjęcie było widoczne na telefonie
+        # Domyślnie zmniejszamy widok (0.5), aby zdjęcie zmieściło się na telefonie
         zoom_factor = st.slider("🔍 Powiększenie / Rozmiar zdjęcia", min_value=0.2, max_value=1.5, value=0.5, step=0.05)
     with col2:
         stroke_w = st.slider("🖌️ Grubość pędzla", min_value=5, max_value=100, value=20, step=5)
@@ -31,19 +31,10 @@ if uploaded_file is not None:
 
     st.write("Zamaluj pędzlem element, który ma zniknąć:")
 
-    # 2. Kontener umożliwiający płynne przewijanie zdjęcia na boki
-    st.markdown(
-        """
-        
-        """,
-        unsafe_allow_gradient=True if hasattr(st, "allow_gradient") else False,
-        unsafe_allow_html=True,
-    )
-
-    # 3. Rysowanie płótna canvas
+    # 2. Rysowanie płótna canvas
     canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
-        stroke_width=int(stroke_w * zoom_factor), # Skalujemy grubość pędzla do widoku
+        stroke_width=int(stroke_w * zoom_factor), # Skalujemy pędzel do widoku
         stroke_color="#ff0000",
         background_image=raw_image,
         update_streamlit=True,
@@ -56,7 +47,7 @@ if uploaded_file is not None:
     if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
 
-        # 1. Sprawdzanie danych JSON i przeliczanie punktów ze skali canvas na pełne zdjęcie
+        # Sprawdzanie danych JSON i przeliczanie punktów ze skali canvas na pełne zdjęcie
         if (
             canvas_result.json_data is not None
             and "objects" in canvas_result.json_data
@@ -67,7 +58,7 @@ if uploaded_file is not None:
                     pts = []
                     for p in obj["path"]:
                         if p[0] in ["M", "L", "Q"] and len(p) >= 3:
-                            # Przeliczamy współrzędne z powrotem do oryginalnego rozmiaru zdjęcia
+                            # Przeliczamy współrzędne do oryginalnego rozmiaru zdjęcia
                             orig_x = int(p[1] / zoom_factor)
                             orig_y = int(p[2] / zoom_factor)
                             pts.append([orig_x, orig_y])
@@ -81,7 +72,7 @@ if uploaded_file is not None:
                             thickness=stroke_w,
                         )
 
-        # 2. Rezerwa z image_data (przeskalowanie do oryginalnej rozdzielczości)
+        # Rezerwa z image_data (przeskalowanie do oryginalnej rozdzielczości)
         if not np.any(mask_binary > 0):
             try:
                 img_data = canvas_result.image_data
