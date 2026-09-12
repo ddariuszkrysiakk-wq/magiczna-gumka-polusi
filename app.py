@@ -62,7 +62,7 @@ if uploaded_file is not None:
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
 
         # 1. Główna metoda: Odczyt punktów rysowania (JSON)
-        if canvas_result.json_data is not None and "objects" in canvas_result.json_data:
+        if canvas_result is not None and canvas_result.json_data is not None and "objects" in canvas_result.json_data:
             for obj in canvas_result.json_data["objects"]:
                 if obj.get("type") == "path" and "path" in obj:
                     pts = []
@@ -75,7 +75,6 @@ if uploaded_file is not None:
 
                     if len(pts) > 1:
                         pts_arr = np.array(pts, dtype=np.int32).reshape((-1, 1, 2))
-                        # Rysujemy grubsze linie na masce dla pewności
                         scaled_stroke = max(5, int(stroke_w / zoom_factor))
                         cv2.polylines(
                             mask_binary,
@@ -85,28 +84,27 @@ if uploaded_file is not None:
                             thickness=scaled_stroke,
                         )
 
-        # 2. Metoda awaryjna: Odczyt bezpośrednio z pikseli obrazka (Alpha Channel)
-        if not np.any(mask_binary > 0) and canvas_result.image_data is not None:
-            img_data = canvas_result.image_data
-            if np.any(img_data[:, :, 3] > 0):
-                # Wyciągamy warstwę alfa (zaznaczenie)
-                alpha_mask = (img_data[:, :, 3] > 0).astype(np.uint8) * 255
-                
-                # Tworzymy pełną maskę i wklejamy w odpowiednie miejsce z uwzględnieniem przesunięcia
-                full_canvas_mask = np.zeros((base_h, base_w), dtype=np.uint8)
-                h_crop, w_crop = alpha_mask.shape[:2]
-                full_canvas_mask[shift_y:shift_y + h_crop, shift_x:shift_x + w_crop] = alpha_mask
-                
-                # Skalujemy maskę do oryginalnych wymiarów zdjęcia
-                mask_binary = cv2.resize(
-                    full_canvas_mask,
-                    (raw_image.width, raw_image.height),
-                    interpolation=cv2.INTER_NEAREST,
-                )
+        # 2. Metoda awaryjna: Bezpieczny odczyt z pikseli (Alpha Channel)
+        if not np.any(mask_binary > 0) and canvas_result is not None:
+            try:
+                img_data = canvas_result.image_data
+                if img_data is not None and np.any(img_data[:, :, 3] > 0):
+                    alpha_mask = (img_data[:, :, 3] > 0).astype(np.uint8) * 255
+                    
+                    full_canvas_mask = np.zeros((base_h, base_w), dtype=np.uint8)
+                    h_crop, w_crop = alpha_mask.shape[:2]
+                    full_canvas_mask[shift_y:shift_y + h_crop, shift_x:shift_x + w_crop] = alpha_mask
+                    
+                    mask_binary = cv2.resize(
+                        full_canvas_mask,
+                        (raw_image.width, raw_image.height),
+                        interpolation=cv2.INTER_NEAREST,
+                    )
+            except Exception:
+                pass
 
         # Generowanie wyniku
         if np.any(mask_binary > 0):
-            # Pogrubiamy lekko maskę (dilacja), aby lepiej pokryć krawędzie
             kernel = np.ones((5, 5), np.uint8)
             mask_binary = cv2.dilate(mask_binary, kernel, iterations=1)
 
