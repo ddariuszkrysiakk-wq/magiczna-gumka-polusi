@@ -21,7 +21,7 @@ if uploaded_file is not None:
 col1, col2 = st.columns(2)
 with col1:
         # Domyślnie zmniejszamy widok (0.5), aby zdjęcie zmieściło się na telefonie
-        zoom_factor = st.slider("🔍 Powiększenie / Rozmiar zdjęcia", min_value=0.2, max_value=2.0, value=0.8, step=0.05)
+        zoom_factor = st.slider("🔍 Powiększenie / Rozmiar zdjęcia", min_value=0.2, max_value=2.0, value=1.2, step=0.05)
 with col2:
         stroke_w = st.slider("🖌️ Grubość pędzla", min_value=5, max_value=100, value=20, step=5)
 
@@ -32,8 +32,9 @@ canvas_h = int(raw_image.height * zoom_factor)
 st.write("Zamaluj pędzlem element, który ma zniknąć(przesuwaj ramkę palcem, by się przemieścić):")
 
     # 2. Rysowanie płótna canvas
-css_style = "<" + "style>div[data-testid='stCustomComponentV1'] { overflow: scroll !important; max-height: 60vh !important; border: 2px solid #ff4b4b; border-radius: 8px; }"
-st.markdown(css_style ,unsafe_allow_html=True)
+open_div = "<" + "div style='width: 100%; max-height: 60vh; overflow: auto !important; border: 2px solid #ff4b4b; border-radius: 8px; -webkit-overflow-scrolling: touch;'>"
+st.markdown(open_div, unsafe_allow_html=True)
+
 
 
 canvas_result = st_canvas(
@@ -47,6 +48,8 @@ canvas_result = st_canvas(
         drawing_mode="freedraw",
         key="canvas",
     )
+close_div = "</div>"
+st.markdown(close_div, unsafe_allow_html=True)
 
 if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
