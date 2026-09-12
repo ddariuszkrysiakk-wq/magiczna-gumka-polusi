@@ -21,7 +21,7 @@ if uploaded_file is not None:
 col1, col2 = st.columns(2)
 with col1:
         # Domyślnie zmniejszamy widok (0.5), aby zdjęcie zmieściło się na telefonie
-        zoom_factor = st.slider("🔍 Powiększenie / Rozmiar zdjęcia", min_value=0.2, max_value=1.5, value=0.5, step=0.05)
+        zoom_factor = st.slider("🔍 Powiększenie / Rozmiar zdjęcia", min_value=0.2, max_value=2.0, value=0.8, step=0.05)
 with col2:
         stroke_w = st.slider("🖌️ Grubość pędzla", min_value=5, max_value=100, value=20, step=5)
 
@@ -29,7 +29,7 @@ with col2:
 canvas_w = int(raw_image.width * zoom_factor)
 canvas_h = int(raw_image.height * zoom_factor)
 
-st.write("Zamaluj pędzlem element, który ma zniknąć:")
+st.write("Zamaluj pędzlem element, który ma zniknąć(przesuwaj ramkę palcem, by się przemieścić):")
 
     # 2. Rysowanie płótna canvas
    
@@ -50,7 +50,7 @@ canvas_result = st_canvas(
         height=canvas_h,
         width=canvas_w,
         drawing_mode="freedraw",
-        key="canvas_{drawing_mode}",
+        key="canvas",
     )
 st.markdown("</div>" , unsafe_allow_html=True)
 
