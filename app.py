@@ -5,7 +5,26 @@ import streamlit as st
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 
-css_global = "<" + "style>[data-testid='stCustomComponentV1'] { overflow: auto !important; max-height: 70vh !important; border: 2px solid #ff4b4b !important; } [data-testid='stCustomComponentV1'] > iframe { max-height: none !important; }"
+css_global = "<" + "style>" \
+"[data-testid='stCustomComponentV1'] { " \
+"  overflow: scroll !important; " \
+"  max-height: 65vh !important; " \
+"  border: 2px solid #ff4b4b !important; " \
+"  touch-action: pan-x pan-y !important; " \
+"  overscroll-behavior: contain !important; " \
+"} " \
+"[data-testid='stCustomComponentV1']::-webkit-scrollbar { " \
+"  -webkit-appearance: none !important; " \
+"  width: 10px !important; " \
+"  height: 10px !important; " \
+"} " \
+"[data-testid='stCustomComponentV1']::-webkit-scrollbar-thumb { " \
+"  background-color: #ff4b4b !important; " \
+"  border-radius: 5px !important; " \
+"} " \
+"</style>"
+
+st.markdown(css_global, unsafe_allow_html=True)
 
 st.markdown(css_global, unsafe_allow_html=True)
 
