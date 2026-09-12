@@ -29,7 +29,7 @@ if uploaded_file is not None:
     base_w = int(raw_image.width * zoom_factor)
     base_h = int(raw_image.height * zoom_factor)
 
-    # Okno podglądu dopasowane do ekranu telefonu
+    # Okno podglądu
     view_w = min(base_w, 350)
     view_h = min(base_h, 450)
 
@@ -44,7 +44,7 @@ if uploaded_file is not None:
     img_zoomed = raw_image.resize((base_w, base_h))
     img_cropped = img_zoomed.crop((shift_x, shift_y, shift_x + view_w, shift_y + view_h))
 
-    # 2. Wywołanie płótna canvas z unikalnym kluczem dynamicznym
+    # 2. Wywołanie płótna canvas ze stałym kluczem
     canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
         stroke_width=stroke_w,
@@ -54,20 +54,21 @@ if uploaded_file is not None:
         height=view_h,
         width=view_w,
         drawing_mode="freedraw",
-        key=f"canvas_{zoom_factor}_{shift_x}_{shift_y}",
+        key="canvas_main",
     )
 
     # 3. Akcja przetwarzania zdjęcia
     if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
 
-        # 1. Główna metoda: Odczyt punktów rysowania (JSON)
-        if canvas_result is not None and canvas_result.json_data is not None and "objects" in canvas_result.json_data:
-            for obj in canvas_result.json_data["objects"]:
-                if obj.get("type") == "path" and "path" in obj:
+        # Metoda 1: Uniwersalny odczyt ścieżek z JSON
+        if canvas_result is not None and canvas_result.json_data is not None:
+            objects = canvas_result.json_data.get("objects", [])
+            for obj in objects:
+                if "path" in obj:
                     pts = []
                     for p in obj["path"]:
-                        if p[0] in ["M", "L", "Q"] and len(p) >= 3:
+                        if len(p) >= 3 and p[0] in ["M", "L", "Q"]:
                             orig_x = int((p[1] + shift_x) / zoom_factor)
                             orig_y = int((p[2] + shift_y) / zoom_factor)
                             pts.append([orig_x, orig_y])
@@ -83,10 +84,10 @@ if uploaded_file is not None:
                             thickness=scaled_stroke,
                         )
 
-        # 2. Metoda awaryjna: Bezpieczny odczyt z pikseli (Alpha Channel)
+        # Metoda 2: Odczyt z plamy obrazu (Alpha) z bezpieczną obsługą wyciągania danych
         if not np.any(mask_binary > 0) and canvas_result is not None:
             try:
-                img_data = canvas_result.image_data
+                img_data = getattr(canvas_result, "image_data", None)
                 if img_data is not None and np.any(img_data[:, :, 3] > 0):
                     alpha_mask = (img_data[:, :, 3] > 0).astype(np.uint8) * 255
                     
@@ -102,10 +103,10 @@ if uploaded_file is not None:
             except Exception:
                 pass
 
-        # Generowanie wyniku
+        # Przetwarzanie i wynik
         if np.any(mask_binary > 0):
-            kernel = np.ones((5, 5), np.uint8)
-            mask_binary = cv2.dilate(mask_binary, kernel, iterations=1)
+            kernel = np.ones((7, 7), np.uint8)
+            mask_binary = cv2.dilate(mask_binary, kernel, iterations=2)
 
             img_cv = cv2.cvtColor(np.array(raw_image), cv2.COLOR_RGB2BGR)
             result_cv = cv2.inpaint(img_cv, mask_binary, 3, cv2.INPAINT_TELEA)
@@ -126,4 +127,4 @@ if uploaded_file is not None:
                 mime="image/png",
             )
         else:
-            st.warning("Nie wykryto zamalowanego obszaru. Spróbuj zamalować element ponownie!")
+            st.warning("Nie wykryto zamalowanego obszaru. Zamaluj element jeszcze raz i poczekaj chwilkę przed kliknięciem!")
