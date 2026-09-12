@@ -35,7 +35,7 @@ if uploaded_file is not None:
    
 st.markdown("<div style='width: 100%; overflow: auto; border: 1px solid #ccc; max-height: 70vh;'>" ,unsafe_allow_html=True)
                 
-    canvas_result = st_canvas(
+canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
         stroke_width=int(stroke_w * zoom_factor), # Skalujemy pędzel do widoku
         stroke_color="#ff0000",
