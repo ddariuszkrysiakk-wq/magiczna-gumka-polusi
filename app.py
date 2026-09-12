@@ -44,7 +44,7 @@ if uploaded_file is not None:
     img_zoomed = raw_image.resize((base_w, base_h))
     img_cropped = img_zoomed.crop((shift_x, shift_y, shift_x + view_w, shift_y + view_h))
 
-    # 2. Wywołanie płótna canvas
+    # 2. Wywołanie płótna canvas z unikalnym kluczem dynamicznym
     canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
         stroke_width=stroke_w,
@@ -54,7 +54,7 @@ if uploaded_file is not None:
         height=view_h,
         width=view_w,
         drawing_mode="freedraw",
-        key="canvas",
+        key=f"canvas_{zoom_factor}_{shift_x}_{shift_y}",
     )
 
     # 3. Akcja przetwarzania zdjęcia
@@ -68,7 +68,6 @@ if uploaded_file is not None:
                     pts = []
                     for p in obj["path"]:
                         if p[0] in ["M", "L", "Q"] and len(p) >= 3:
-                            # Uwzględniamy powiększenie oraz przesunięcie kadru
                             orig_x = int((p[1] + shift_x) / zoom_factor)
                             orig_y = int((p[2] + shift_y) / zoom_factor)
                             pts.append([orig_x, orig_y])
