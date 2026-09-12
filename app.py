@@ -61,47 +61,55 @@ if uploaded_file is not None:
     if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
 
-        # Sprawdzanie danych JSON i przeliczanie punktów z uwzględnieniem shift_x oraz shift_y
-        if (
-            canvas_result.json_data is not None
-            and "objects" in canvas_result.json_data
-            and len(canvas_result.json_data["objects"]) > 0
-        ):
+        # 1. Główna metoda: Odczyt punktów rysowania (JSON)
+        if canvas_result.json_data is not None and "objects" in canvas_result.json_data:
             for obj in canvas_result.json_data["objects"]:
-                if "path" in obj:
+                if obj.get("type") == "path" and "path" in obj:
                     pts = []
                     for p in obj["path"]:
                         if p[0] in ["M", "L", "Q"] and len(p) >= 3:
+                            # Uwzględniamy powiększenie oraz przesunięcie kadru
                             orig_x = int((p[1] + shift_x) / zoom_factor)
                             orig_y = int((p[2] + shift_y) / zoom_factor)
                             pts.append([orig_x, orig_y])
+
                     if len(pts) > 1:
                         pts_arr = np.array(pts, dtype=np.int32).reshape((-1, 1, 2))
+                        # Rysujemy grubsze linie na masce dla pewności
+                        scaled_stroke = max(5, int(stroke_w / zoom_factor))
                         cv2.polylines(
                             mask_binary,
                             [pts_arr],
                             isClosed=False,
                             color=255,
-                            thickness=stroke_w,
+                            thickness=scaled_stroke,
                         )
 
-        # Rezerwa z image_data
-        if not np.any(mask_binary > 0):
-            try:
-                img_data = canvas_result.image_data
-                if img_data is not None and np.any(img_data[:, :, 3] > 0):
-                    mask = img_data[:, :, 3]
-                    _, mask_resized = cv2.threshold(mask, 10, 255, cv2.THRESH_BINARY)
-                    mask_binary = cv2.resize(
-                        mask_resized, 
-                        (raw_image.width, raw_image.height), 
-                        interpolation=cv2.INTER_NEAREST
-                    )
-            except Exception:
-                pass
+        # 2. Metoda awaryjna: Odczyt bezpośrednio z pikseli obrazka (Alpha Channel)
+        if not np.any(mask_binary > 0) and canvas_result.image_data is not None:
+            img_data = canvas_result.image_data
+            if np.any(img_data[:, :, 3] > 0):
+                # Wyciągamy warstwę alfa (zaznaczenie)
+                alpha_mask = (img_data[:, :, 3] > 0).astype(np.uint8) * 255
+                
+                # Tworzymy pełną maskę i wklejamy w odpowiednie miejsce z uwzględnieniem przesunięcia
+                full_canvas_mask = np.zeros((base_h, base_w), dtype=np.uint8)
+                h_crop, w_crop = alpha_mask.shape[:2]
+                full_canvas_mask[shift_y:shift_y + h_crop, shift_x:shift_x + w_crop] = alpha_mask
+                
+                # Skalujemy maskę do oryginalnych wymiarów zdjęcia
+                mask_binary = cv2.resize(
+                    full_canvas_mask,
+                    (raw_image.width, raw_image.height),
+                    interpolation=cv2.INTER_NEAREST,
+                )
 
-        # Wynik i pobieranie
+        # Generowanie wyniku
         if np.any(mask_binary > 0):
+            # Pogrubiamy lekko maskę (dilacja), aby lepiej pokryć krawędzie
+            kernel = np.ones((5, 5), np.uint8)
+            mask_binary = cv2.dilate(mask_binary, kernel, iterations=1)
+
             img_cv = cv2.cvtColor(np.array(raw_image), cv2.COLOR_RGB2BGR)
             result_cv = cv2.inpaint(img_cv, mask_binary, 3, cv2.INPAINT_TELEA)
             result_rgb = cv2.cvtColor(result_cv, cv2.COLOR_BGR2RGB)
@@ -121,4 +129,4 @@ if uploaded_file is not None:
                 mime="image/png",
             )
         else:
-            st.warning("Najpierw zamaluj element do usunięcia!")
+            st.warning("Nie wykryto zamalowanego obszaru. Spróbuj zamalować element ponownie!")
