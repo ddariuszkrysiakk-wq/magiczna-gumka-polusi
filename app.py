@@ -48,7 +48,7 @@ canvas_result = st_canvas(
     )
 st.markdown("</div>" , unsafe_allow_html=True)
 
-    if st.button("Wyczaruj zmianę ✨", type="primary"):
+if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
 
         # Sprawdzanie danych JSON i przeliczanie punktów ze skali canvas na pełne zdjęcie
