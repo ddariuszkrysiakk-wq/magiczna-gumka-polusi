@@ -5,6 +5,10 @@ import streamlit as st
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 
+css_global = "<" + "style>[data-testid='stCustomComponentV1'] { overflow: auto !important; max-height: 70vh !important; border: 2px solid #ff4b4b !important; } [data-testid='stCustomComponentV1'] > iframe { max-height: none !important; }"
+
+st.markdown(css_global, unsafe_allow_html=True)
+
 st.set_page_config(page_title="Magiczna Gumka Polusi", page_icon="❤️")
 
 st.title("❤️ DLA CÓRUSI POLUSI ❤️")
@@ -32,10 +36,6 @@ canvas_h = int(raw_image.height * zoom_factor)
 st.write("Zamaluj pędzlem element, który ma zniknąć(przesuwaj ramkę palcem, by się przemieścić):")
 
     # 2. Rysowanie płótna canvas
-open_div = "<" + "div style='width: 100%; max-height: 60vh; overflow: auto !important; border: 2px solid #ff4b4b; border-radius: 8px; -webkit-overflow-scrolling: touch;'>"
-st.markdown(open_div, unsafe_allow_html=True)
-
-
 
 canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
@@ -48,8 +48,7 @@ canvas_result = st_canvas(
         drawing_mode="freedraw",
         key="canvas",
     )
-close_div = "</div>"
-st.markdown(close_div, unsafe_allow_html=True)
+
 
 if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
