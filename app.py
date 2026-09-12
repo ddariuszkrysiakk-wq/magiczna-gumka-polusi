@@ -32,6 +32,10 @@ if uploaded_file is not None:
     st.write("Zamaluj pędzlem element, który ma zniknąć:")
 
     # 2. Rysowanie płótna canvas
+   
+`st.markdown('
+     ', unsafe_allow_html=True)`
+                
     canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
         stroke_width=int(stroke_w * zoom_factor), # Skalujemy pędzel do widoku
@@ -43,6 +47,8 @@ if uploaded_file is not None:
         drawing_mode="freedraw",
         key="canvas",
     )
+   `st.markdown('
+    ', unsafe_allow_html=True)`
 
     if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
