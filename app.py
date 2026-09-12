@@ -38,7 +38,8 @@ st.markdown("<div style='width: 100%; overflow: auto; border: 1px solid #ccc; ma
 drawing_mode = st.radio(
     "Wybierz tryb:",
     ("freedraw", "transform"),
-    format_func=lambda x: "✏️ Malowanie" if x == "freedraw" else "🔍 Przesuwanie/Powiększanie"
+    format_func=lambda x: "✏️ Malowanie" if x == "freedraw" else "🔍 Przesuwanie/Powiększanie",
+    horizontal=True
     )
 canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
