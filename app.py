@@ -46,7 +46,7 @@ canvas_result = st_canvas(
         drawing_mode="freedraw",
         key="canvas",
     )
-   st.markdown("</div>" , unsafe_allow_html=True)
+st.markdown("</div>" , unsafe_allow_html=True)
 
     if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
