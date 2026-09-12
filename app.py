@@ -49,7 +49,7 @@ if uploaded_file is not None:
     )
 
     # Zamknięcie kontenera z suwakami
-    close_div = ""
+    close_div = "</div>"
     st.markdown(close_div, unsafe_allow_html=True)
 
     # 4. Akcja przetwarzania zdjęcia
