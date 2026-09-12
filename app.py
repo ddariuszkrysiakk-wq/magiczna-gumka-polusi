@@ -33,7 +33,7 @@ if uploaded_file is not None:
 
     # 2. Rysowanie płótna canvas
    
-`st.markdown("<div style='width: 100%; overflow: auto; border: 1px solid #ccc; max-height: 70vh;'>" ,unsafe_allow_html=True)`
+st.markdown("<div style='width: 100%; overflow: auto; border: 1px solid #ccc; max-height: 70vh;'>" ,unsafe_allow_html=True)`
                 
     canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
@@ -46,7 +46,7 @@ if uploaded_file is not None:
         drawing_mode="freedraw",
         key="canvas",
     )
-   `st.markdown("</div>" , unsafe_allow_html=True)`
+   st.markdown("</div>" , unsafe_allow_html=True)`
 
     if st.button("Wyczaruj zmianę ✨", type="primary"):
         mask_binary = np.zeros((raw_image.height, raw_image.width), dtype=np.uint8)
