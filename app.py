@@ -50,7 +50,7 @@ canvas_result = st_canvas(
         height=canvas_h,
         width=canvas_w,
         drawing_mode="freedraw",
-        key="canvas",
+        key="canvas_{drawing_mode}",
     )
 st.markdown("</div>" , unsafe_allow_html=True)
 
