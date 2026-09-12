@@ -34,10 +34,14 @@ if uploaded_file is not None:
     # 2. Rysowanie płótna canvas
    
 st.markdown("<div style='width: 100%; overflow: auto; border: 1px solid #ccc; max-height: 70vh;'>" ,unsafe_allow_html=True)
-                
+
+drawing_mode = st.radio(
+    "Wybierz tryb:",
+    ("freedraw", "transform"),
+    format_func=lambda x: "✏️ Malowanie" if x == "freedraw" else "🔍 Przesuwanie/Powiększanie"               
 canvas_result = st_canvas(
         fill_color="rgba(255, 0, 0, 0.5)",
-        stroke_width=int(stroke_w * zoom_factor), # Skalujemy pędzel do widoku
+        stroke_width=stroke_w, 
         stroke_color="#ff0000",
         background_image=raw_image,
         update_streamlit=True,
