@@ -34,11 +34,11 @@ view_w = min(base_w, 350)
 view_h = min(base_h, 450)
 
 # Dodatkowe suwaki przesuwania, jeśli obraz wykracza poza widok
-        col_x, col_y = st.columns(2)
-        with col_x:
-            shift_x = st.slider("⬅️➡️ Przesuń poziom", min_value=0, max_value=max(0, base_w - view_w), value=0)
-        with col_y:
-            shift_y = st.slider("⬆️⬇️ Przesuń pion", min_value=0, max_value=max(0, base_h - view_h), value=0)
+    col_x, col_y = st.columns(2)
+    with col_x:
+        shift_x = st.slider("⬅️➡️ Przesuń poziom", min_value=0, max_value=max(0, base_w - view_w), value=0)
+    with col_y:
+        shift_y = st.slider("⬆️⬇️ Przesuń pion", min_value=0, max_value=max(0, base_h - view_h), value=0)
         
         # Przycinamy obraz tła do wybranego kadru
         img_zoomed = raw_image.resize((base_w, base_h))
